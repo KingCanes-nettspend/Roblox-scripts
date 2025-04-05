@@ -39,36 +39,41 @@ end
 
 -- GUI Setup
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
-local tab = DrRayLibrary.newTab("Main Controls", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
-tab.newLabel("Welcome to the Canes Priv script!")
+local mainTab = DrRayLibrary.newTab("Main Controls", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+mainTab.newLabel("Welcome to the Canes Priv script!")
 
--- Toggle Buttons
+local lockTab = DrRayLibrary.newTab("Lock Position", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+lockTab.newLabel("Control your position locking here!")
+
+-- Main Controls Tab (Fast Rebirth, Auto Rep, etc.)
 local autoRep = false
 local autoRebirth = false
 local fastRebirth = false
-local lockPosition = false  -- New variable for Lock Position
 
-tab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
+mainTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
     equipPetByName("Swift Samurai")
 end)
 
-tab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
+mainTab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
     autoRep = state
 end)
 
-tab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
+mainTab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
     autoRebirth = state
 end)
 
-tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
+mainTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
     fastRebirth = state
 end)
 
-tab.newToggle("Lock Position", "Toggle Lock Position", false, function(state)
+local statusLabel = mainTab.newLabel("Status: Idle")
+
+-- Lock Position Tab (Lock and Unlock)
+local lockPosition = false
+
+lockTab.newToggle("Lock Position", "Toggle Lock Position", false, function(state)
     lockPosition = state
 end)
-
-local statusLabel = tab.newLabel("Status: Idle")
 
 -- Helpers
 local function unequipAllPets()
@@ -123,33 +128,7 @@ local function lockPlayerPosition()
     end
 end
 
--- Loops
-task.spawn(function()
-    while true do
-        if autoRep then
-            for _ = 1, 10 do
-                LocalPlayer.muscleEvent:FireServer("rep")
-            end
-        end
-        task.wait(0.01)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        if autoRebirth then
-            local before = LocalPlayer.leaderstats.Rebirths.Value
-            ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-            if LocalPlayer.leaderstats.Rebirths.Value > before then
-                statusLabel.Text = "Status: Auto Rebirth Successful"
-            else
-                statusLabel.Text = "Status: Waiting to Rebirth"
-            end
-        end
-        task.wait(1)
-    end
-end)
-
+-- Fast Rebirth Loops
 task.spawn(function()
     while true do
         if fastRebirth then
@@ -180,22 +159,12 @@ task.spawn(function()
 
             -- Find and teleport to Jungle Bar Lift
             local machine = findMachine("Jungle Bar Lift")
-            if machine then
-                print("Jungle Bar Lift machine found!")  -- Debugging line
-                if machine:FindFirstChild("interactSeat") then
-                    print("Interact seat found!")  -- Debugging line
-                    -- Teleport to the machine (Jungle Bar Lift)
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
-                    -- Automatically press 'E' to interact
-                    repeat
-                        task.wait(0.1)
-                        pressE()
-                    until LocalPlayer.Character.Humanoid.Sit
-                else
-                    print("Interact seat not found!")  -- Debugging line
-                end
-            else
-                print("Jungle Bar Lift machine not found!")  -- Debugging line
+            if machine and machine:FindFirstChild("interactSeat") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
+                repeat
+                    task.wait(0.1)
+                    pressE()
+                until LocalPlayer.Character.Humanoid.Sit
             end
 
             -- Perform the rebirth
