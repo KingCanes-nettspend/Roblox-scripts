@@ -4,29 +4,34 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local VirtualInput = game:GetService("VirtualInputManager")
+local HttpService = game:GetService("HttpService")
 
 -- Load DrRay Library
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
 -- Whitelist System
 local whitelist = {
-    8172479471,
+    8172479471,  -- Replace with actual whitelisted User IDs
     2880637817,
+    -- Add more user IDs here
 }
 
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
     print("Your UserId:", userId)
+
     for _, id in ipairs(whitelist) do
         if tonumber(id) == userId then
             print("✅ You are whitelisted!")
             return true
         end
     end
+
     warn("❌ You are NOT whitelisted.")
     return false
 end
 
+-- Check if the player is whitelisted
 if not checkWhitelist() then
     LocalPlayer:Kick("You are not whitelisted.")
     return
@@ -34,39 +39,31 @@ end
 
 -- GUI Setup
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
-local mainTab = DrRayLibrary.newTab("Main Controls", "")
-mainTab.newLabel("Welcome to the Canes Priv script!")
+local tab = DrRayLibrary.newTab("Main Controls", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+tab.newLabel("Welcome to the Canes Priv script!")
 
-local lockTab = DrRayLibrary.newTab("Lock Position", "")
-lockTab.newLabel("Control your position locking here!")
-
--- Toggles
+-- Toggle Buttons
 local autoRep = false
 local autoRebirth = false
 local fastRebirth = false
-local lockPosition = false
 
-mainTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
+tab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
     equipPetByName("Swift Samurai")
 end)
 
-mainTab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
+tab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
     autoRep = state
 end)
 
-mainTab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
+tab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
     autoRebirth = state
 end)
 
-mainTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
+tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
     fastRebirth = state
 end)
 
-local statusLabel = mainTab.newLabel("Status: Idle")
-
-lockTab.newToggle("Lock Position", "Toggle Lock Position", false, function(state)
-    lockPosition = state
-end)
+local statusLabel = tab.newLabel("Status: Idle")
 
 -- Helpers
 local function unequipAllPets()
@@ -109,16 +106,6 @@ function pressE()
     VirtualInput:SendKeyEvent(false, "E", false, game)
 end
 
-function lockPlayerPosition()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        char.Humanoid.WalkSpeed = 0
-        char.Humanoid.JumpPower = 0
-        local pos = char.HumanoidRootPart.Position
-        char.HumanoidRootPart.CFrame = CFrame.new(pos)
-    end
-end
-
 -- Loops
 task.spawn(function()
     while true do
@@ -156,10 +143,12 @@ task.spawn(function()
                 strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
             end
 
+            -- Unequip pets and prepare for fast rebirth
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Swift Samurai")
 
+            -- Ensure the player's strength meets the requirement
             while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
                 for _ = 1, 20 do
                     LocalPlayer.muscleEvent:FireServer("rep")
@@ -167,10 +156,12 @@ task.spawn(function()
                 task.wait()
             end
 
+            -- Unequip pets and equip the next pet
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Tribal Overlord")
 
+            -- Find and teleport to Jungle Bar Lift
             local machine = findMachine("Jungle Bar Lift")
             if machine and machine:FindFirstChild("interactSeat") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
@@ -180,6 +171,7 @@ task.spawn(function()
                 until LocalPlayer.Character.Humanoid.Sit
             end
 
+            -- Perform the rebirth
             local before = LocalPlayer.leaderstats.Rebirths.Value
             repeat
                 ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
@@ -189,20 +181,5 @@ task.spawn(function()
             statusLabel.Text = "Status: Fast Rebirth Complete"
         end
         task.wait(0.5)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        if lockPosition then
-            lockPlayerPosition()
-        else
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("Humanoid") then
-                char.Humanoid.WalkSpeed = 16
-                char.Humanoid.JumpPower = 50
-            end
-        end
-        task.wait(0.1)
     end
 end)
