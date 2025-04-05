@@ -9,50 +9,29 @@ local HttpService = game:GetService("HttpService")
 -- Load DrRay Library
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
--- Whitelist URL (RAW Pastebin)
-local whitelistUrl = "https://pastebin.com/raw/zkUD0H8D"
+-- Whitelist System
+local whitelist = {
+    8172479471,  -- Replace with actual whitelisted User IDs
+    987654321,
+    -- Add more user IDs here
+}
 
--- Check if player is whitelisted
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
     print("Your UserId:", userId)
 
-    local success, response = pcall(function()
-        return HttpService:GetAsync(whitelistUrl)
-    end)
-
-    if success then
-        print("Whitelist raw response:", response)
-
-        local whitelist
-        local decodeSuccess, decodeResult = pcall(function()
-            return HttpService:JSONDecode(response)
-        end)
-
-        if decodeSuccess then
-            whitelist = decodeResult
-        else
-            warn("Failed to decode whitelist JSON:", decodeResult)
-            return false
+    for _, id in ipairs(whitelist) do
+        if tonumber(id) == userId then
+            print("✅ You are whitelisted!")
+            return true
         end
-
-        for _, id in ipairs(whitelist) do
-            print("Checking ID:", id, "against your ID:", userId)
-            if tonumber(id) == userId then
-                print("✅ You are whitelisted!")
-                return true
-            end
-        end
-
-        warn("❌ You are NOT whitelisted.")
-    else
-        warn("❌ Failed to fetch whitelist:", response)
     end
 
+    warn("❌ You are NOT whitelisted.")
     return false
 end
 
--- Kick if not whitelisted
+-- Check if the player is whitelisted
 if not checkWhitelist() then
     LocalPlayer:Kick("You are not whitelisted.")
     return
