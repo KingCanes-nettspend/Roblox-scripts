@@ -181,7 +181,9 @@ task.spawn(function()
             -- Find and teleport to Jungle Bar Lift
             local machine = findMachine("Jungle Bar Lift")
             if machine and machine:FindFirstChild("interactSeat") then
+                -- Teleport to the machine (Jungle Bar Lift)
                 LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
+                -- Automatically press 'E' to interact
                 repeat
                     task.wait(0.1)
                     pressE()
