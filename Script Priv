@@ -8,7 +8,7 @@ local window = DrRayLibrary:Load("DrRay!", "Default")
 local tab1 = DrRayLibrary.newTab("Main", "ImageIdHere")
 
 -- Whitelist (Add UserIds of whitelisted users here)
-local whitelistedUserIds = {8172479471, 2880637817}  -- Add the UserIds of people you want to whitelist
+local whitelistedUserIds = {812479471, 2880637817}  -- Add the UserIds of people you want to whitelist
 
 -- Function to check if player is whitelisted
 local function checkWhitelist()
