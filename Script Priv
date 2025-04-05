@@ -46,6 +46,7 @@ tab.newLabel("Welcome to the Canes Priv script!")
 local autoRep = false
 local autoRebirth = false
 local fastRebirth = false
+local lockPosition = false  -- New variable for Lock Position
 
 tab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
     equipPetByName("Swift Samurai")
@@ -61,6 +62,10 @@ end)
 
 tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
     fastRebirth = state
+end)
+
+tab.newToggle("Lock Position", "Toggle Lock Position", false, function(state)
+    lockPosition = state
 end)
 
 local statusLabel = tab.newLabel("Status: Idle")
@@ -104,6 +109,18 @@ function pressE()
     VirtualInput:SendKeyEvent(true, "E", false, game)
     task.wait(0.1)
     VirtualInput:SendKeyEvent(false, "E", false, game)
+end
+
+-- Lock Player's Position
+local function lockPlayerPosition()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame  -- Lock position
+        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 0  -- Disable movement
+            humanoid.JumpPower = 0  -- Disable jumping
+        end
+    end
 end
 
 -- Loops
@@ -184,3 +201,12 @@ task.spawn(function()
     end
 end)
 
+-- Lock Position loop
+task.spawn(function()
+    while true do
+        if lockPosition then
+            lockPlayerPosition()  -- Lock the player's position
+        end
+        task.wait(0.1)  -- Prevent the script from overloading the game
+    end
+end)
