@@ -12,7 +12,7 @@ local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/
 -- Whitelist System
 local whitelist = {
     8172479471,  -- Replace with actual whitelisted User IDs
-    987654321,
+    2880637817,
     -- Add more user IDs here
 }
 
