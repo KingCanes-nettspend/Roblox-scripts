@@ -180,14 +180,22 @@ task.spawn(function()
 
             -- Find and teleport to Jungle Bar Lift
             local machine = findMachine("Jungle Bar Lift")
-            if machine and machine:FindFirstChild("interactSeat") then
-                -- Teleport to the machine (Jungle Bar Lift)
-                LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
-                -- Automatically press 'E' to interact
-                repeat
-                    task.wait(0.1)
-                    pressE()
-                until LocalPlayer.Character.Humanoid.Sit
+            if machine then
+                print("Jungle Bar Lift machine found!")  -- Debugging line
+                if machine:FindFirstChild("interactSeat") then
+                    print("Interact seat found!")  -- Debugging line
+                    -- Teleport to the machine (Jungle Bar Lift)
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
+                    -- Automatically press 'E' to interact
+                    repeat
+                        task.wait(0.1)
+                        pressE()
+                    until LocalPlayer.Character.Humanoid.Sit
+                else
+                    print("Interact seat not found!")  -- Debugging line
+                end
+            else
+                print("Jungle Bar Lift machine not found!")  -- Debugging line
             end
 
             -- Perform the rebirth
@@ -212,3 +220,4 @@ task.spawn(function()
         task.wait(0.1)  -- Prevent the script from overloading the game
     end
 end)
+
