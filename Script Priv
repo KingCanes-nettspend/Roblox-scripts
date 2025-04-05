@@ -4,34 +4,29 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local VirtualInput = game:GetService("VirtualInputManager")
-local HttpService = game:GetService("HttpService")
 
 -- Load DrRay Library
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
 -- Whitelist System
 local whitelist = {
-    8172479471,  -- Replace with actual whitelisted User IDs
+    8172479471,
     2880637817,
-    -- Add more user IDs here
 }
 
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
     print("Your UserId:", userId)
-
     for _, id in ipairs(whitelist) do
         if tonumber(id) == userId then
             print("✅ You are whitelisted!")
             return true
         end
     end
-
     warn("❌ You are NOT whitelisted.")
     return false
 end
 
--- Check if the player is whitelisted
 if not checkWhitelist() then
     LocalPlayer:Kick("You are not whitelisted.")
     return
@@ -39,16 +34,17 @@ end
 
 -- GUI Setup
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
-local mainTab = DrRayLibrary.newTab("Main Controls", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+local mainTab = DrRayLibrary.newTab("Main Controls", "")
 mainTab.newLabel("Welcome to the Canes Priv script!")
 
-local lockTab = DrRayLibrary.newTab("Lock Position", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+local lockTab = DrRayLibrary.newTab("Lock Position", "")
 lockTab.newLabel("Control your position locking here!")
 
--- Main Controls Tab (Fast Rebirth, Auto Rep, etc.)
+-- Toggles
 local autoRep = false
 local autoRebirth = false
 local fastRebirth = false
+local lockPosition = false
 
 mainTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
     equipPetByName("Swift Samurai")
@@ -67,9 +63,6 @@ mainTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
 end)
 
 local statusLabel = mainTab.newLabel("Status: Idle")
-
--- Lock Position Tab (Lock and Unlock)
-local lockPosition = false
 
 lockTab.newToggle("Lock Position", "Toggle Lock Position", false, function(state)
     lockPosition = state
@@ -116,19 +109,43 @@ function pressE()
     VirtualInput:SendKeyEvent(false, "E", false, game)
 end
 
--- Lock Player's Position
-local function lockPlayerPosition()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame  -- Lock position
-        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = 0  -- Disable movement
-            humanoid.JumpPower = 0  -- Disable jumping
-        end
+function lockPlayerPosition()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.Humanoid.WalkSpeed = 0
+        char.Humanoid.JumpPower = 0
+        local pos = char.HumanoidRootPart.Position
+        char.HumanoidRootPart.CFrame = CFrame.new(pos)
     end
 end
 
--- Fast Rebirth Loops
+-- Loops
+task.spawn(function()
+    while true do
+        if autoRep then
+            for _ = 1, 10 do
+                LocalPlayer.muscleEvent:FireServer("rep")
+            end
+        end
+        task.wait(0.01)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if autoRebirth then
+            local before = LocalPlayer.leaderstats.Rebirths.Value
+            ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+            if LocalPlayer.leaderstats.Rebirths.Value > before then
+                statusLabel.Text = "Status: Auto Rebirth Successful"
+            else
+                statusLabel.Text = "Status: Waiting to Rebirth"
+            end
+        end
+        task.wait(1)
+    end
+end)
+
 task.spawn(function()
     while true do
         if fastRebirth then
@@ -139,12 +156,10 @@ task.spawn(function()
                 strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
             end
 
-            -- Unequip pets and prepare for fast rebirth
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Swift Samurai")
 
-            -- Ensure the player's strength meets the requirement
             while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
                 for _ = 1, 20 do
                     LocalPlayer.muscleEvent:FireServer("rep")
@@ -152,12 +167,10 @@ task.spawn(function()
                 task.wait()
             end
 
-            -- Unequip pets and equip the next pet
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Tribal Overlord")
 
-            -- Find and teleport to Jungle Bar Lift
             local machine = findMachine("Jungle Bar Lift")
             if machine and machine:FindFirstChild("interactSeat") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
@@ -167,7 +180,6 @@ task.spawn(function()
                 until LocalPlayer.Character.Humanoid.Sit
             end
 
-            -- Perform the rebirth
             local before = LocalPlayer.leaderstats.Rebirths.Value
             repeat
                 ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
@@ -180,13 +192,17 @@ task.spawn(function()
     end
 end)
 
--- Lock Position loop
 task.spawn(function()
     while true do
         if lockPosition then
-            lockPlayerPosition()  -- Lock the player's position
+            lockPlayerPosition()
+        else
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = 16
+                char.Humanoid.JumpPower = 50
+            end
         end
-        task.wait(0.1)  -- Prevent the script from overloading the game
+        task.wait(0.1)
     end
 end)
-
