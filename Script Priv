@@ -143,10 +143,12 @@ task.spawn(function()
                 strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
             end
 
+            -- Unequip pets and prepare for fast rebirth
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Swift Samurai")
 
+            -- Ensure the player's strength meets the requirement
             while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
                 for _ = 1, 20 do
                     LocalPlayer.muscleEvent:FireServer("rep")
@@ -154,10 +156,12 @@ task.spawn(function()
                 task.wait()
             end
 
+            -- Unequip pets and equip the next pet
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Tribal Overlord")
 
+            -- Find and teleport to Jungle Bar Lift
             local machine = findMachine("Jungle Bar Lift")
             if machine and machine:FindFirstChild("interactSeat") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
@@ -167,6 +171,7 @@ task.spawn(function()
                 until LocalPlayer.Character.Humanoid.Sit
             end
 
+            -- Perform the rebirth
             local before = LocalPlayer.leaderstats.Rebirths.Value
             repeat
                 ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
@@ -178,3 +183,4 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
+
