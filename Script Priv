@@ -1,89 +1,84 @@
--- Load the DrRay library from the GitHub repository Library
-local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
-
--- Create a new window and set its title and theme
-local window = DrRayLibrary:Load("DrRay!", "Default")
-
--- Create the first tab with an image ID (Optional: Update the image IDs as per your preference)
-local tab1 = DrRayLibrary.newTab("Main", "ImageIdHere")
-
--- Whitelist (Add UserIds of whitelisted users here)
-local whitelistedUserIds = {812479471, 2880637817}  -- Add the UserIds of people you want to whitelist
-
--- Function to check if player is whitelisted
-local function checkWhitelist()
-    local userId = game.Players.LocalPlayer.UserId
-    for _, id in ipairs(whitelistedUserIds) do
-        if id == userId then
-            return true
-        end
-    end
-    return false
-end
-
--- Kick the player if not whitelisted
-if not checkWhitelist() then
-    game.Players.LocalPlayer:Kick("You are not wl big L")  -- Kick non-whitelisted players with a message
-else
-    print("You are whitelisted!")  -- Optional: confirm whitelisted status
-end
-
--- Buttons for the UI
-local equipPetBtn = tab1.newButton("Equip Swift Samurai", "Equips the Swift Samurai pet", function()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local LocalPlayer = game.Players.LocalPlayer
-    local function unequipAllPets()
-        for _, folder in pairs(LocalPlayer.petsFolder:GetChildren()) do
-            if folder:IsA("Folder") then
-                for _, pet in pairs(folder:GetChildren()) do
-                    ReplicatedStorage.rEvents.equipPetEvent:FireServer("unequipPet", pet)
-                end
-            end
-        end
-        task.wait(0.1)
-    end
-
-    local function equipPetByName(name)
-        unequipAllPets()
-        task.wait(0.01)
-        for _, pet in pairs(LocalPlayer.petsFolder.Unique:GetChildren()) do
-            if pet.Name == name then
-                ReplicatedStorage.rEvents.equipPetEvent:FireServer("equipPet", pet)
-            end
-        end
-    end
-
-    equipPetByName("Swift Samurai")
-    print("Swift Samurai Equipped")
-end)
-
-local autoRepBtn = tab1.newToggle("Auto Rep", "Toggle Auto Rep", false, function(toggleState)
-    autoRep = toggleState
-    print(autoRep and "Auto Rep ON" or "Auto Rep OFF")
-end)
-
-local autoRebirthBtn = tab1.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(toggleState)
-    autoRebirth = toggleState
-    print(autoRebirth and "Auto Rebirth ON" or "Auto Rebirth OFF")
-end)
-
-local fastRebirthBtn = tab1.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(toggleState)
-    fastRebirth = toggleState
-    print(fastRebirth and "Fast Rebirth ON" or "Fast Rebirth OFF")
-end)
-
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local VirtualInput = game:GetService("VirtualInputManager")
+local HttpService = game:GetService("HttpService")
 
--- Toggle variables
+-- Load DrRay Library
+local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
+
+-- URL of the raw whitelist file hosted on Pastebin
+local whitelistUrl = "https://pastebin.com/zkUD0H8D"  -- Replace with your actual raw Pastebin URL
+
+-- Function to check if the player is whitelisted
+local function checkWhitelist()
+    local userId = LocalPlayer.UserId
+    local success, response = pcall(function()
+        -- Get the data from the whitelist URL
+        return HttpService:GetAsync(whitelistUrl)
+    end)
+    
+    if success then
+        -- Decode the JSON response into a Lua table
+        local whitelist = HttpService:JSONDecode(response)
+        
+        -- Check if the player's UserId is in the whitelist
+        for _, id in ipairs(whitelist) do
+            if id == userId then
+                return true  -- Player is whitelisted
+            end
+        end
+    else
+        warn("Failed to fetch the whitelist.")
+    end
+    return false  -- Player is not whitelisted
+end
+
+-- Kick the player if not whitelisted
+if not checkWhitelist() then
+    LocalPlayer:Kick("You are not whitelisted.")  -- Kick non-whitelisted players
+else
+    print("You are whitelisted!")  -- Optional: confirm whitelisted status
+end
+
+-- Create the DrRay GUI window
+local window = DrRayLibrary:Load("Canes Priv Script", "Default")
+
+-- Create the first tab
+local tab = DrRayLibrary.newTab("Main Controls", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+
+-- Add a label to the tab
+tab.newLabel("Welcome to the Canes Priv script!")
+
+-- Add Equip Swift Samurai button
+tab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
+    equipPetByName("Swift Samurai")
+end)
+
+-- Add Auto Rep button with toggle functionality
 local autoRep = false
-local autoRebirth = false
-local fastRebirth = false
+tab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
+    autoRep = state
+end)
 
--- Helper Functions for Auto Rebirth, Auto Rep, and Fast Rebirth
+-- Add Auto Rebirth button with toggle functionality
+local autoRebirth = false
+tab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
+    autoRebirth = state
+end)
+
+-- Add Fast Rebirth button with toggle functionality
+local fastRebirth = false
+tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
+    fastRebirth = state
+end)
+
+-- Add Status label to show current action status
+local statusLabel = tab.newLabel("Status: Idle")
+
+-- Helper Functions for actions (equip pets, etc.)
 local function unequipAllPets()
     for _, folder in pairs(LocalPlayer.petsFolder:GetChildren()) do
         if folder:IsA("Folder") then
@@ -123,6 +118,34 @@ local function pressE()
     task.wait(0.1)
     VirtualInput:SendKeyEvent(false, "E", false, game)
 end
+
+-- Auto Rep loop
+task.spawn(function()
+    while true do
+        if autoRep then
+            for _ = 1, 10 do
+                LocalPlayer.muscleEvent:FireServer("rep")
+            end
+        end
+        task.wait(0.01)
+    end
+end)
+
+-- Auto Rebirth loop
+task.spawn(function()
+    while true do
+        if autoRebirth then
+            local before = LocalPlayer.leaderstats.Rebirths.Value
+            ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+            if LocalPlayer.leaderstats.Rebirths.Value > before then
+                statusLabel.Text = "Status: Auto Rebirth Successful"
+            else
+                statusLabel.Text = "Status: Waiting to Rebirth"
+            end
+        end
+        task.wait(1)
+    end
+end)
 
 -- Fast Rebirth loop
 task.spawn(function()
@@ -165,36 +188,8 @@ task.spawn(function()
                 task.wait(0.1)
             until LocalPlayer.leaderstats.Rebirths.Value > before
 
-            print("Fast Rebirth Complete")
+            statusLabel.Text = "Status: Fast Rebirth Complete"
         end
         task.wait(0.5)
-    end
-end)
-
--- Regular Auto Rebirth loop
-task.spawn(function()
-    while true do
-        if autoRebirth then
-            local before = LocalPlayer.leaderstats.Rebirths.Value
-            ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-            if LocalPlayer.leaderstats.Rebirths.Value > before then
-                print("Auto Rebirth Successful")
-            else
-                print("Waiting to Rebirth")
-            end
-        end
-        task.wait(1)
-    end
-end)
-
--- Auto Rep loop
-task.spawn(function()
-    while true do
-        if autoRep then
-            for _ = 1, 10 do
-                LocalPlayer.muscleEvent:FireServer("rep")
-            end
-        end
-        task.wait(0.01)
     end
 end)
