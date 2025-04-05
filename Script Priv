@@ -9,75 +9,84 @@ local HttpService = game:GetService("HttpService")
 -- Load DrRay Library
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
--- URL of the raw whitelist file hosted on Pastebin
+-- Whitelist URL (RAW Pastebin)
 local whitelistUrl = "https://pastebin.com/raw/zkUD0H8D"
 
+-- Check if player is whitelisted
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
+    print("Your UserId:", userId)
+
     local success, response = pcall(function()
-        -- Get the data from the whitelist URL
         return HttpService:GetAsync(whitelistUrl)
     end)
-    
+
     if success then
-        -- Decode the JSON response into a Lua table
-        local whitelist = HttpService:JSONDecode(response)
-        
-        -- Check if the player's UserId is in the whitelist
+        print("Whitelist raw response:", response)
+
+        local whitelist
+        local decodeSuccess, decodeResult = pcall(function()
+            return HttpService:JSONDecode(response)
+        end)
+
+        if decodeSuccess then
+            whitelist = decodeResult
+        else
+            warn("Failed to decode whitelist JSON:", decodeResult)
+            return false
+        end
+
         for _, id in ipairs(whitelist) do
-            if id == userId then
-                return true  -- Player is whitelisted
+            print("Checking ID:", id, "against your ID:", userId)
+            if tonumber(id) == userId then
+                print("✅ You are whitelisted!")
+                return true
             end
         end
+
+        warn("❌ You are NOT whitelisted.")
     else
-        warn("Failed to fetch the whitelist.")
+        warn("❌ Failed to fetch whitelist:", response)
     end
-    return false  -- Player is not whitelisted
+
+    return false
 end
 
--- Kick the player if not whitelisted
+-- Kick if not whitelisted
 if not checkWhitelist() then
-    LocalPlayer:Kick("You are not whitelisted.")  -- Kick non-whitelisted players
-else
-    print("You are whitelisted!")  -- Optional: confirm whitelisted status
+    LocalPlayer:Kick("You are not whitelisted.")
+    return
 end
 
--- Create the DrRay GUI window
+-- GUI Setup
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
-
--- Create the first tab
 local tab = DrRayLibrary.newTab("Main Controls", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
-
--- Add a label to the tab
 tab.newLabel("Welcome to the Canes Priv script!")
 
--- Add Equip Swift Samurai button
+-- Toggle Buttons
+local autoRep = false
+local autoRebirth = false
+local fastRebirth = false
+
 tab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
     equipPetByName("Swift Samurai")
 end)
 
--- Add Auto Rep button with toggle functionality
-local autoRep = false
 tab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
     autoRep = state
 end)
 
--- Add Auto Rebirth button with toggle functionality
-local autoRebirth = false
 tab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
     autoRebirth = state
 end)
 
--- Add Fast Rebirth button with toggle functionality
-local fastRebirth = false
 tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
     fastRebirth = state
 end)
 
--- Add Status label to show current action status
 local statusLabel = tab.newLabel("Status: Idle")
 
--- Helper Functions for actions (equip pets, etc.)
+-- Helpers
 local function unequipAllPets()
     for _, folder in pairs(LocalPlayer.petsFolder:GetChildren()) do
         if folder:IsA("Folder") then
@@ -89,7 +98,7 @@ local function unequipAllPets()
     task.wait(0.1)
 end
 
-local function equipPetByName(name)
+function equipPetByName(name)
     unequipAllPets()
     task.wait(0.01)
     for _, pet in pairs(LocalPlayer.petsFolder.Unique:GetChildren()) do
@@ -99,7 +108,7 @@ local function equipPetByName(name)
     end
 end
 
-local function findMachine(machineName)
+function findMachine(machineName)
     local machine = workspace.machinesFolder:FindFirstChild(machineName)
     if not machine then
         for _, folder in pairs(workspace:GetChildren()) do
@@ -112,13 +121,13 @@ local function findMachine(machineName)
     return machine
 end
 
-local function pressE()
+function pressE()
     VirtualInput:SendKeyEvent(true, "E", false, game)
     task.wait(0.1)
     VirtualInput:SendKeyEvent(false, "E", false, game)
 end
 
--- Auto Rep loop
+-- Loops
 task.spawn(function()
     while true do
         if autoRep then
@@ -130,7 +139,6 @@ task.spawn(function()
     end
 end)
 
--- Auto Rebirth loop
 task.spawn(function()
     while true do
         if autoRebirth then
@@ -146,7 +154,6 @@ task.spawn(function()
     end
 end)
 
--- Fast Rebirth loop
 task.spawn(function()
     while true do
         if fastRebirth then
