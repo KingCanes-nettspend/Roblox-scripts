@@ -1,0 +1,200 @@
+-- Load the DrRay library from the GitHub repository Library
+local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
+
+-- Create a new window and set its title and theme
+local window = DrRayLibrary:Load("DrRay!", "Default")
+
+-- Create the first tab with an image ID (Optional: Update the image IDs as per your preference)
+local tab1 = DrRayLibrary.newTab("Main", "ImageIdHere")
+
+-- Whitelist (Add UserIds of whitelisted users here)
+local whitelistedUserIds = {8172479471, 2880637817}  -- Add the UserIds of people you want to whitelist
+
+-- Function to check if player is whitelisted
+local function checkWhitelist()
+    local userId = game.Players.LocalPlayer.UserId
+    for _, id in ipairs(whitelistedUserIds) do
+        if id == userId then
+            return true
+        end
+    end
+    return false
+end
+
+-- Kick the player if not whitelisted
+if not checkWhitelist() then
+    game.Players.LocalPlayer:Kick("You are not wl big L")  -- Kick non-whitelisted players with a message
+else
+    print("You are whitelisted!")  -- Optional: confirm whitelisted status
+end
+
+-- Buttons for the UI
+local equipPetBtn = tab1.newButton("Equip Swift Samurai", "Equips the Swift Samurai pet", function()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local LocalPlayer = game.Players.LocalPlayer
+    local function unequipAllPets()
+        for _, folder in pairs(LocalPlayer.petsFolder:GetChildren()) do
+            if folder:IsA("Folder") then
+                for _, pet in pairs(folder:GetChildren()) do
+                    ReplicatedStorage.rEvents.equipPetEvent:FireServer("unequipPet", pet)
+                end
+            end
+        end
+        task.wait(0.1)
+    end
+
+    local function equipPetByName(name)
+        unequipAllPets()
+        task.wait(0.01)
+        for _, pet in pairs(LocalPlayer.petsFolder.Unique:GetChildren()) do
+            if pet.Name == name then
+                ReplicatedStorage.rEvents.equipPetEvent:FireServer("equipPet", pet)
+            end
+        end
+    end
+
+    equipPetByName("Swift Samurai")
+    print("Swift Samurai Equipped")
+end)
+
+local autoRepBtn = tab1.newToggle("Auto Rep", "Toggle Auto Rep", false, function(toggleState)
+    autoRep = toggleState
+    print(autoRep and "Auto Rep ON" or "Auto Rep OFF")
+end)
+
+local autoRebirthBtn = tab1.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(toggleState)
+    autoRebirth = toggleState
+    print(autoRebirth and "Auto Rebirth ON" or "Auto Rebirth OFF")
+end)
+
+local fastRebirthBtn = tab1.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(toggleState)
+    fastRebirth = toggleState
+    print(fastRebirth and "Fast Rebirth ON" or "Fast Rebirth OFF")
+end)
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VirtualInput = game:GetService("VirtualInputManager")
+
+-- Toggle variables
+local autoRep = false
+local autoRebirth = false
+local fastRebirth = false
+
+-- Helper Functions for Auto Rebirth, Auto Rep, and Fast Rebirth
+local function unequipAllPets()
+    for _, folder in pairs(LocalPlayer.petsFolder:GetChildren()) do
+        if folder:IsA("Folder") then
+            for _, pet in pairs(folder:GetChildren()) do
+                ReplicatedStorage.rEvents.equipPetEvent:FireServer("unequipPet", pet)
+            end
+        end
+    end
+    task.wait(0.1)
+end
+
+local function equipPetByName(name)
+    unequipAllPets()
+    task.wait(0.01)
+    for _, pet in pairs(LocalPlayer.petsFolder.Unique:GetChildren()) do
+        if pet.Name == name then
+            ReplicatedStorage.rEvents.equipPetEvent:FireServer("equipPet", pet)
+        end
+    end
+end
+
+local function findMachine(machineName)
+    local machine = workspace.machinesFolder:FindFirstChild(machineName)
+    if not machine then
+        for _, folder in pairs(workspace:GetChildren()) do
+            if folder:IsA("Folder") and folder.Name:find("machines") then
+                machine = folder:FindFirstChild(machineName)
+                if machine then break end
+            end
+        end
+    end
+    return machine
+end
+
+local function pressE()
+    VirtualInput:SendKeyEvent(true, "E", false, game)
+    task.wait(0.1)
+    VirtualInput:SendKeyEvent(false, "E", false, game)
+end
+
+-- Fast Rebirth loop
+task.spawn(function()
+    while true do
+        if fastRebirth then
+            local rebirths = LocalPlayer.leaderstats.Rebirths.Value
+            local strengthNeeded = 10000 + 5000 * rebirths
+            local golden = LocalPlayer.ultimatesFolder:FindFirstChild("Golden Rebirth")
+            if golden then
+                strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
+            end
+
+            unequipAllPets()
+            task.wait(0.1)
+            equipPetByName("Swift Samurai")
+
+            while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
+                for _ = 1, 20 do
+                    LocalPlayer.muscleEvent:FireServer("rep")
+                end
+                task.wait()
+            end
+
+            unequipAllPets()
+            task.wait(0.1)
+            equipPetByName("Tribal Overlord")
+
+            local machine = findMachine("Jungle Bar Lift")
+            if machine and machine:FindFirstChild("interactSeat") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
+                repeat
+                    task.wait(0.1)
+                    pressE()
+                until LocalPlayer.Character.Humanoid.Sit
+            end
+
+            local before = LocalPlayer.leaderstats.Rebirths.Value
+            repeat
+                ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                task.wait(0.1)
+            until LocalPlayer.leaderstats.Rebirths.Value > before
+
+            print("Fast Rebirth Complete")
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- Regular Auto Rebirth loop
+task.spawn(function()
+    while true do
+        if autoRebirth then
+            local before = LocalPlayer.leaderstats.Rebirths.Value
+            ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+            if LocalPlayer.leaderstats.Rebirths.Value > before then
+                print("Auto Rebirth Successful")
+            else
+                print("Waiting to Rebirth")
+            end
+        end
+        task.wait(1)
+    end
+end)
+
+-- Auto Rep loop
+task.spawn(function()
+    while true do
+        if autoRep then
+            for _ = 1, 10 do
+                LocalPlayer.muscleEvent:FireServer("rep")
+            end
+        end
+        task.wait(0.01)
+    end
+end)
