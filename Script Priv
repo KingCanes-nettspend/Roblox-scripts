@@ -11,6 +11,7 @@ local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/
 
 -- URL of the raw whitelist file hosted on Pastebin
 local whitelistUrl = "https://pastebin.com/raw/zkUD0H8D"
+
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
     local success, response = pcall(function()
