@@ -66,9 +66,10 @@ tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
     fastRebirth = state
 end)
 
--- Add Rock Farm Switches
-local Rock = tab.newTab("Rock Farm")
+-- Rock Farm Tab
+local rockFarmTab = DrRayLibrary.newTab("Rock Farm", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
 
+-- Add Rock Farm Switches
 local function autoPunchRock(rockName, requiredDurability)
     while getgenv().autoFarm do
         task.wait()
@@ -86,43 +87,43 @@ local function autoPunchRock(rockName, requiredDurability)
     end
 end
 
-Rock.newSwitch("Auto Punch Jungle Rock (10M)", function(state)
+rockFarmTab.newSwitch("Auto Punch Jungle Rock (10M)", function(state)
     selectrock = "Ancient Jungle Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 10000000)
 end)
 
-Rock.newSwitch("Auto Punch King Rock (5M)", function(state)
+rockFarmTab.newSwitch("Auto Punch King Rock (5M)", function(state)
     selectrock = "Muscle King Gym Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 5000000)
 end)
 
-Rock.newSwitch("Auto Punch Legend Rock (1M)", function(state)
+rockFarmTab.newSwitch("Auto Punch Legend Rock (1M)", function(state)
     selectrock = "Legend Gym Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 1000000)
 end)
 
-Rock.newSwitch("Auto Punch Inferno Rock (750K)", function(state)
+rockFarmTab.newSwitch("Auto Punch Inferno Rock (750K)", function(state)
     selectrock = "Eternal Gym Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 750000)
 end)
 
-Rock.newSwitch("Auto Punch Mythical Rock (400K)", function(state)
+rockFarmTab.newSwitch("Auto Punch Mythical Rock (400K)", function(state)
     selectrock = "Mythical Gym Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 400000)
 end)
 
-Rock.newSwitch("Auto Punch Frost Rock (150K)", function(state)
+rockFarmTab.newSwitch("Auto Punch Frost Rock (150K)", function(state)
     selectrock = "Frost Gym Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 150000)
 end)
 
-Rock.newSwitch("Auto Punch Tiny Rock (0)", function(state)
+rockFarmTab.newSwitch("Auto Punch Tiny Rock (0)", function(state)
     selectrock = "Tiny Island Rock"
     getgenv().autoFarm = state
     autoPunchRock(selectrock, 0)
