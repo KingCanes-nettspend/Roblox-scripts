@@ -11,6 +11,7 @@ local whitelist = {
     8172479471,
     2880637817,
     1522608840,
+    5125591078,
 }
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
