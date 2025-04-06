@@ -87,6 +87,7 @@ local function autoPunchRock(rockName, requiredDurability)
     end
 end
 
+-- Create Switches under Rock Farm Tab
 rockFarmTab.newSwitch("Auto Punch Jungle Rock (10M)", function(state)
     selectrock = "Ancient Jungle Rock"
     getgenv().autoFarm = state
@@ -247,4 +248,5 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
+
 
