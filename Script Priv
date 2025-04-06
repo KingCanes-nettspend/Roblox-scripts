@@ -192,7 +192,7 @@ local statusLabel = tab.newLabel("Status: Idle")
 task.spawn(function()
     while true do
         if autoRep then
-            for _ = 1, 1000 do
+            for _ = 1, 20 do
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
         end
@@ -296,7 +296,7 @@ local statusLabel = rebirthTab.newLabel("Status: Idle")
 task.spawn(function()
     while true do
         if autoRep then
-            for _ = 1, 20 do
+            for _ = 1, 1000 do
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
         end
