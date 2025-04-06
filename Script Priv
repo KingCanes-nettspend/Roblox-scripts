@@ -232,7 +232,7 @@ task.spawn(function()
 
             -- Ensure the player's strength meets the requirement
             while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
-                for _ = 1, 1000 do
+                for _ = 1, 20 do
                     LocalPlayer.muscleEvent:FireServer("rep")
                 end
                 task.wait()
