@@ -47,6 +47,8 @@ tab.newLabel("Welcome to the Canes Priv script!")
 local autoRep = false
 local autoRebirth = false
 local fastRebirth = false
+local autoFarm = false
+local selectrock = ""
 
 tab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
     equipPetByName("Swift Samurai")
@@ -64,7 +66,67 @@ tab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
     fastRebirth = state
 end)
 
-local statusLabel = tab.newLabel("Status: Idle")
+-- Add Rock Farm Switches
+local Rock = tab.newTab("Rock Farm")
+
+local function autoPunchRock(rockName, requiredDurability)
+    while getgenv().autoFarm do
+        task.wait()
+        if game:GetService("Players").LocalPlayer.Durability.Value >= requiredDurability then
+            for i, v in pairs(game:GetService("Workspace").machinesFolder:GetDescendants()) do
+                if v.Name == "neededDurability" and v.Value == requiredDurability and game.Players.LocalPlayer.Character:FindFirstChild("LeftHand") and game.Players.LocalPlayer.Character:FindFirstChild("RightHand") then
+                    firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 0)
+                    firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 1)
+                    firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 0)
+                    firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 1)
+                    gettool()
+                end
+            end
+        end
+    end
+end
+
+Rock.newSwitch("Auto Punch Jungle Rock (10M)", function(state)
+    selectrock = "Ancient Jungle Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 10000000)
+end)
+
+Rock.newSwitch("Auto Punch King Rock (5M)", function(state)
+    selectrock = "Muscle King Gym Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 5000000)
+end)
+
+Rock.newSwitch("Auto Punch Legend Rock (1M)", function(state)
+    selectrock = "Legend Gym Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 1000000)
+end)
+
+Rock.newSwitch("Auto Punch Inferno Rock (750K)", function(state)
+    selectrock = "Eternal Gym Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 750000)
+end)
+
+Rock.newSwitch("Auto Punch Mythical Rock (400K)", function(state)
+    selectrock = "Mythical Gym Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 400000)
+end)
+
+Rock.newSwitch("Auto Punch Frost Rock (150K)", function(state)
+    selectrock = "Frost Gym Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 150000)
+end)
+
+Rock.newSwitch("Auto Punch Tiny Rock (0)", function(state)
+    selectrock = "Tiny Island Rock"
+    getgenv().autoFarm = state
+    autoPunchRock(selectrock, 0)
+end)
 
 -- Helpers
 local function unequipAllPets()
@@ -184,3 +246,4 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
+
