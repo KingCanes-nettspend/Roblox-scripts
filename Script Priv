@@ -1,4 +1,4 @@
--- Services
+--// Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
@@ -6,164 +6,117 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualInput = game:GetService("VirtualInputManager")
 local HttpService = game:GetService("HttpService")
 
--- Load DrRay Library
-local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
-
--- Whitelist System
+--// Whitelist System
 local whitelist = {
-    8172479471,  
+    8172479471,
     2880637817,
     1522608840,
 }
-
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
     print("Your UserId:", userId)
-
     for _, id in ipairs(whitelist) do
         if tonumber(id) == userId then
             print("✅ You are whitelisted!")
             return true
         end
     end
-
     warn("❌ You are NOT whitelisted.")
     return false
 end
-
--- Check if the player is whitelisted
 if not checkWhitelist() then
     LocalPlayer:Kick("You are not whitelisted.")
     return
 end
 
--- GUI Setup
+--// Load UI Library
+local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
+
+--// GUI Setup
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
 local tab = DrRayLibrary.newTab("Rock Farm", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
-tab.newLabel("Welcome to the Canes Priv script!")
+tab.newLabel("Welcome to the Rock Farm script!")
 
--- Variables
+--// Variables
 local autoFarm = false
 local punchDelay = 0.1
 local selectRock = ""
 local equippedTool = nil
+local farmThread = nil
 
--- Function to simulate the punch action
-function autoPunchRock(rockName, requiredDurability)
-    -- Equip the tool before doing anything
-    equipPunchTool()
-
-    while autoFarm do
-        task.wait(punchDelay)
-        if LocalPlayer.Durability.Value >= requiredDurability then
-            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
-                if v.Name == "neededDurability" and v.Value == requiredDurability then
-                    -- Ensure that the player's hands are there for the interaction
-                    local character = LocalPlayer.Character
-                    if character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
-                        -- Simulate the touch interaction to "punch" the rock
-                        firetouchinterest(v.Parent.Rock, character.RightHand, 0)
-                        firetouchinterest(v.Parent.Rock, character.RightHand, 1)
-                        firetouchinterest(v.Parent.Rock, character.LeftHand, 0)
-                        firetouchinterest(v.Parent.Rock, character.LeftHand, 1)
-                    end
-                end
-            end
-        end
-    end
-end
-
--- Function to equip the punch tool
+--// Equip Punch Tool
 function equipPunchTool()
-    -- Check if the player already has the tool equipped
-    if equippedTool and equippedTool.Parent == LocalPlayer.Character then
-        return  -- Tool is already equipped
-    end
-
-    -- Iterate through the player's tools and equip the first punch tool found
+    if equippedTool and equippedTool.Parent == LocalPlayer.Character then return end
     for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
         if tool:IsA("Tool") and tool.Name:find("Punch") then
-            tool.Parent = LocalPlayer.Character  -- Equip the tool
+            tool.Parent = LocalPlayer.Character
             equippedTool = tool
             return
         end
     end
-
-    -- If no punch tool is found, log a message or handle accordingly
     warn("No punch tool found!")
 end
 
--- Function to simulate the punch action using hands (added functionality)
-local lp = game.Players.LocalPlayer
-for _, hand in ipairs({"RightHand", "LeftHand"}) do
-    lp.muscleEvent:FireServer("punch", hand)
+--// Auto Punch Function
+function autoPunchRock(rockName, requiredDurability)
+    if farmThread then task.cancel(farmThread) end
+    farmThread = task.spawn(function()
+        equipPunchTool()
+        while autoFarm and selectRock == rockName do
+            task.wait(punchDelay)
+            if LocalPlayer.Durability.Value >= requiredDurability then
+                for _, machine in pairs(Workspace.machinesFolder:GetChildren()) do
+                    if machine:IsA("Model") and machine.Name == rockName then
+                        local rock = machine:FindFirstChild("Rock") or machine:FindFirstChildWhichIsA("BasePart")
+                        if rock then
+                            local character = LocalPlayer.Character
+                            if character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                                for _, hand in ipairs({"RightHand", "LeftHand"}) do
+                                    LocalPlayer.muscleEvent:FireServer("punch", hand)
+                                    firetouchinterest(rock, character[hand], 0)
+                                    firetouchinterest(rock, character[hand], 1)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
 end
 
--- Toggle Buttons for each rock
-tab.newToggle("Auto Punch Jungle Rock (10M)", "Auto Punch Jungle Rock (10M)", false, function(state)
-    selectRock = "Ancient Jungle Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 10000000) -- 10M durability
-    end
-end)
+--// Rock Toggles
+local rockData = {
+    {"Auto Punch Jungle Rock (10M)", "Ancient Jungle Rock", 10000000},
+    {"Auto Punch King Rock (5M)", "Muscle King Mountain", 5000000},
+    {"Auto Punch Legend Rock (1M)", "Rock Of Legends", 1000000},
+    {"Auto Punch Inferno Rock (750K)", "Inferno Rock", 750000},
+    {"Auto Punch Mythical Rock (400K)", "Mythic Rock", 400000},
+    {"Auto Punch Frost Rock (150K)", "Frozen Rock", 150000},
+    {"Auto Punch Tiny Rock (0)", "Tiny Rock", 0}
+}
 
-tab.newToggle("Auto Punch King Rock (5M)", "Auto Punch King Rock (5M)", false, function(state)
-    selectRock = "Muscle King Gym Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 5000000) -- 5M durability
-    end
-end)
+for _, data in ipairs(rockData) do
+    local label, rock, dur = unpack(data)
+    tab.newToggle(label, label, false, function(state)
+        autoFarm = state
+        selectRock = state and rock or ""
+        if autoFarm then
+            autoPunchRock(rock, dur)
+        end
+    end)
+end
 
-tab.newToggle("Auto Punch Legend Rock (1M)", "Auto Punch Legend Rock (1M)", false, function(state)
-    selectRock = "Legend Gym Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 1000000) -- 1M durability
-    end
-end)
-
-tab.newToggle("Auto Punch Inferno Rock (750K)", "Auto Punch Inferno Rock (750K)", false, function(state)
-    selectRock = "Eternal Gym Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 750000) -- 750K durability
-    end
-end)
-
-tab.newToggle("Auto Punch Mythical Rock (400K)", "Auto Punch Mythical Rock (400K)", false, function(state)
-    selectRock = "Mythical Gym Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 400000) -- 400K durability
-    end
-end)
-
-tab.newToggle("Auto Punch Frost Rock (150K)", "Auto Punch Frost Rock (150K)", false, function(state)
-    selectRock = "Frost Gym Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 150000) -- 150K durability
-    end
-end)
-
-tab.newToggle("Auto Punch Tiny Rock (0)", "Auto Punch Tiny Rock (0)", false, function(state)
-    selectRock = "Tiny Island Rock"
-    autoFarm = state
-    if autoFarm then
-        autoPunchRock(selectRock, 0) -- 0 durability
-    end
-end)
-
--- Optional: Add a punch delay slider
+--// Punch Delay Slider
 tab.newSlider("Punch Delay", "Set the delay between punches", 0.1, 2, 0.1, function(value)
     punchDelay = value
 end)
 
--- Additional UI elements as needed for more controls
+--// Rebirth Tab Setup
+local rebirthTab = DrRayLibrary.newTab("Rebirth", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+rebirthTab.newLabel("Welcome to the Rebirth features tab!")
 
--- Pet Equip Functions
+--// Pet Equip Functions
 local function unequipAllPets()
     for _, folder in pairs(LocalPlayer.petsFolder:GetChildren()) do
         if folder:IsA("Folder") then
@@ -185,8 +138,45 @@ function equipPetByName(name)
     end
 end
 
--- Loop to handle Auto Rebirth and Auto Rep (Pet Rebirth)
-local statusLabel = tab.newLabel("Status: Idle")
+--// Find & Press Helpers
+function findMachine(name)
+    for _, machine in pairs(Workspace.machinesFolder:GetChildren()) do
+        if machine.Name == name then
+            return machine
+        end
+    end
+end
+
+function pressE()
+    VirtualInput:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+    task.wait()
+    VirtualInput:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+end
+
+--// Toggle Variables
+local autoRep = false
+local autoRebirth = false
+local fastRebirth = false
+local statusLabel = rebirthTab.newLabel("Status: Idle")
+
+--// Rebirth Tab Toggles
+rebirthTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
+    equipPetByName("Swift Samurai")
+end)
+
+rebirthTab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
+    autoRep = state
+end)
+
+rebirthTab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
+    autoRebirth = state
+end)
+
+rebirthTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
+    fastRebirth = state
+end)
+
+--// Loops
 task.spawn(function()
     while true do
         if autoRep then
@@ -223,110 +213,6 @@ task.spawn(function()
                 strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
             end
 
-            -- Unequip pets and prepare for fast rebirth
-            unequipAllPets()
-            task.wait(0.1)
-            equipPetByName("Swift Samurai")
-
-            -- Ensure the player's strength meets the requirement
-            while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
-                for _ = 1, 20 do
-                    LocalPlayer.muscleEvent:FireServer("rep")
-                end
-                task.wait()
-            end
-
-            -- Unequip pets and equip the next pet
-            unequipAllPets()
-            task.wait(0.1)
-            equipPetByName("Tribal Overlord")
-
-            -- Find and teleport to Jungle Bar Lift
-            local machine = findMachine("Jungle Bar Lift")
-            if machine and machine:FindFirstChild("interactSeat") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
-                repeat
-                    task.wait(0.1)
-                    pressE()
-                until LocalPlayer.Character.Humanoid.Sit
-            end
-
-            -- Perform the rebirth
-            local before = LocalPlayer.leaderstats.Rebirths.Value
-            repeat
-                ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-                task.wait(0.1)
-            until LocalPlayer.leaderstats.Rebirths.Value > before
-
-            statusLabel.Text = "Status: Fast Rebirth Complete"
-        end
-        task.wait(0.5)
-    end
-end)
--- Create new tab for Rebirth
-local rebirthTab = DrRayLibrary.newTab("Rebirth", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
-rebirthTab.newLabel("Welcome to the Rebirth features tab!")
-
--- Toggle Buttons
-local autoRep = false
-local autoRebirth = false
-local fastRebirth = false
-
-rebirthTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
-    equipPetByName("Swift Samurai")
-end)
-
-rebirthTab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
-    autoRep = state
-end)
-
-rebirthTab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
-    autoRebirth = state
-end)
-
-rebirthTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
-    fastRebirth = state
-end)
-
-local statusLabel = rebirthTab.newLabel("Status: Idle")
-
--- Loops
-task.spawn(function()
-    while true do
-        if autoRep then
-            for _ = 1, 25 do
-                LocalPlayer.muscleEvent:FireServer("rep")
-            end
-        end
-        task.wait(0.01)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        if autoRebirth then
-            local before = LocalPlayer.leaderstats.Rebirths.Value
-            ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-            if LocalPlayer.leaderstats.Rebirths.Value > before then
-                statusLabel.Text = "Status: Auto Rebirth Successful"
-            else
-                statusLabel.Text = "Status: Waiting to Rebirth"
-            end
-        end
-        task.wait(1)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        if fastRebirth then
-            local rebirths = LocalPlayer.leaderstats.Rebirths.Value
-            local strengthNeeded = 10000 + 5000 * rebirths
-            local golden = LocalPlayer.ultimatesFolder:FindFirstChild("Golden Rebirth")
-            if golden then
-                strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
-            end
-
             unequipAllPets()
             task.wait(0.1)
             equipPetByName("Swift Samurai")
@@ -345,8 +231,7 @@ task.spawn(function()
             local machine = findMachine("Jungle Bar Lift")
             if machine and machine:FindFirstChild("interactSeat") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
-                repeat
-                    task.wait(0.1)
+                repeat task.wait(0.1)
                     pressE()
                 until LocalPlayer.Character.Humanoid.Sit
             end
@@ -362,3 +247,4 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
+
