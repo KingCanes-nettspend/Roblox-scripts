@@ -68,8 +68,9 @@ end)
 
 -- Rock Farm Tab
 local rockFarmTab = DrRayLibrary.newTab("Rock Farm", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+rockFarmTab.newLabel("Rock Farm Options")
 
--- Add Rock Farm Switches
+-- Rock Farm Switches
 local function autoPunchRock(rockName, requiredDurability)
     while getgenv().autoFarm do
         task.wait()
@@ -87,7 +88,6 @@ local function autoPunchRock(rockName, requiredDurability)
     end
 end
 
--- Create Switches under Rock Farm Tab
 rockFarmTab.newSwitch("Auto Punch Jungle Rock (10M)", function(state)
     selectrock = "Ancient Jungle Rock"
     getgenv().autoFarm = state
@@ -249,8 +249,5 @@ task.spawn(function()
     end
 end)
 
-        task.wait(0.5)
-    end
-end)
 
 
