@@ -18,11 +18,11 @@ local function checkWhitelist()
     print("Your UserId:", userId)
     for _, id in ipairs(whitelist) do
         if tonumber(id) == userId then
-            print("✅ You are whitelisted!")
+            print("â\xe2\xe2\x9c\xe2\x9c\x85 You are whitelisted!")
             return true
         end
     end
-    warn("❌ You are NOT whitelisted.")
+    warn("â\xe2\xe2\x9d\xe2\x9d\x8c You are NOT whitelisted.")
     return false
 end
 if not checkWhitelist() then
@@ -177,11 +177,20 @@ rebirthTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(stat
     fastRebirth = state
 end)
 
+--// Hide All Frames Toggle
+rebirthTab.newToggle("Hide All Frames", "Hide all UI frames in ReplicatedStorage", false, function(state)
+    for _, obj in pairs(ReplicatedStorage:GetChildren()) do
+        if obj:IsA("Instance") and obj.Name:match("Frame$") then
+            obj.Visible = not state
+        end
+    end
+end)
+
 --// Loops
 task.spawn(function()
     while true do
         if autoRep then
-            for _ = 1, 30 do
+            for _ = 1, 4000 do
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
         end
