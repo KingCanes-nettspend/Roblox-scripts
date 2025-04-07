@@ -180,7 +180,7 @@ end)
 task.spawn(function()
     while true do
         if autoRep then
-            for _ = 1, 1500 do
+            for _ = 1, 3000 do
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
         end
