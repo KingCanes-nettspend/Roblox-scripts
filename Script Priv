@@ -13,6 +13,7 @@ local whitelist = {
     1522608840,
     7600805172,
 }
+
 local function checkWhitelist()
     local userId = LocalPlayer.UserId
     print("Your UserId:", userId)
@@ -45,6 +46,12 @@ local selectRock = ""
 local equippedTool = nil
 local farmThread = nil
 
+--// Get Durability safely
+local function getDurability()
+    local durabilityStat = LocalPlayer:FindFirstChild("Durability") or (LocalPlayer:FindFirstChild("leaderstats") and LocalPlayer.leaderstats:FindFirstChild("Durability"))
+    return durabilityStat and durabilityStat.Value or 0
+end
+
 --// Equip Punch Tool
 function equipPunchTool()
     if equippedTool and equippedTool.Parent == LocalPlayer.Character then return end
@@ -65,7 +72,7 @@ function autoPunchRock(rockName, requiredDurability)
         equipPunchTool()
         while autoFarm and selectRock == rockName do
             task.wait(punchDelay)
-            if LocalPlayer.Durability.Value >= requiredDurability then
+            if getDurability() >= requiredDurability then
                 for _, machine in pairs(Workspace.machinesFolder:GetChildren()) do
                     if machine:IsA("Model") and machine.Name == rockName then
                         local rock = machine:FindFirstChild("Rock") or machine:FindFirstChildWhichIsA("BasePart")
@@ -173,26 +180,8 @@ rebirthTab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(stat
     autoRebirth = state
 end)
 
-rebirthTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(state)
+rebirthTab.newToggle("Toggle Fast Rebirth", "Enable or disable fast rebirth", false, function(state)
     fastRebirth = state
-end)
-
---// Speed Grind (No Rebirth)
-local switch = rebirthTab:AddSwitch("Speed Grind (No Rebirth)", function(Value)
-    local isGrinding = Value
-
-    if not Value then
-        return
-    end
-
-    for i = 1, 12 do
-        task.spawn(function()
-            while isGrinding do
-                game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
-                task.wait(0.083)
-            end
-        end)
-    end
 end)
 
 --// UI Options Tab Setup
@@ -220,47 +209,14 @@ task.spawn(function()
     end
 end)
 
-task.spawn(function()
-    while true do
-        if fastRebirth then
-            local rebirths = LocalPlayer.leaderstats.Rebirths.Value
-            local strengthNeeded = 10000 + 5000 * rebirths
-            local golden = LocalPlayer.ultimatesFolder:FindFirstChild("Golden Rebirth")
-            if golden then
-                strengthNeeded = math.floor(strengthNeeded * (1 - golden.Value * 0.1))
-            end
+--// Fast Rebirth Loop
+local a=game:GetService("ReplicatedStorage")local b=game:GetService("Players")local c=b.LocalPlayer;local d=function()local e=c.petsFolder;for f,g in pairs(e:GetChildren())do if g:IsA("Folder")then for h,i in pairs(g:GetChildren())do a.rEvents.equipPetEvent:FireServer("unequipPet",i)end end end;task.wait(0.1)end;local j=function(k)d()task.wait(0.01)for l,m in pairs(c.petsFolder.Unique:GetChildren())do if m.Name==k then a.rEvents.equipPetEvent:FireServer("equipPet",m)end end end;local n=function(o)local p=workspace.machinesFolder:FindFirstChild(o)if not p then for q,r in pairs(workspace:GetChildren())do if r:IsA("Folder")and r.Name:find("machines")then p=r:FindFirstChild(o)if p then break end end end end;return p end;local s=function()local t=game:GetService("VirtualInputManager")t:SendKeyEvent(true,"E",false,game)task.wait(0.1)t:SendKeyEvent(false,"E",false,game)end;task.spawn(function()while true do if fastRebirth then local u=c.leaderstats.Rebirths.Value;local v=10000+5000*u;if c.ultimatesFolder:FindFirstChild("Golden Rebirth")then local w=c.ultimatesFolder["Golden Rebirth"].Value;v=math.floor(v*(1-w*0.1))end;d()task.wait(0.1)j("Swift Samurai")while c.leaderstats.Strength.Value<v do for x=1,20 do c.muscleEvent:FireServer("rep")end;task.wait(0.05)end;d()task.wait(0.1)j("Tribal Overlord")local y=n("Jungle Bar Lift")if y and y:FindFirstChild("interactSeat")then c.Character.HumanoidRootPart.CFrame=y.interactSeat.CFrame*CFrame.new(0,3,0)repeat task.wait(0.1)s()until c.Character.Humanoid.Sit end;local z=c.leaderstats.Rebirths.Value;repeat a.rEvents.rebirthRemote:InvokeServer("rebirthRequest")task.wait(0.1)until c.leaderstats.Rebirths.Value>z;task.wait()end task.wait(0.1) end end)
 
-            unequipAllPets()
-            task.wait(0.1)
-            equipPetByName("Swift Samurai")
-
-            while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
-                for i = 1, 50 do
-                    LocalPlayer.muscleEvent:FireServer("rep")
-                    task.wait()
-                end
-            end
-
-            unequipAllPets()
-            task.wait(0.1)
-            equipPetByName("Tribal Overlord")
-
-            local machine = findMachine("Jungle Bar Lift")
-            if machine and machine:FindFirstChild("interactSeat") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = machine.interactSeat.CFrame * CFrame.new(0, 3, 0)
-                repeat task.wait(0.1)
-                    pressE()
-                until LocalPlayer.Character.Humanoid.Sit
-            end
-
-            local before = LocalPlayer.leaderstats.Rebirths.Value
-            repeat
-                ReplicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-                task.wait(0.1)
-            until LocalPlayer.leaderstats.Rebirths.Value > before
-
-            statusLabel.Text = "Status: Fast Rebirth Complete"
-        end
-        task.wait(0.5)
-    end
+--// Send Join Message
+local success, err = pcall(function()
+    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Loaded ✅ PRIVATE SCRIPT Made by CLK_Canes(CLK ON TOP)", "All")
 end)
+if not success then
+    warn("Failed to send chat message:", err)
+end
+
