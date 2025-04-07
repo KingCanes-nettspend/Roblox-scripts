@@ -217,7 +217,7 @@ task.spawn(function()
             equipPetByName("Swift Samurai")
 
             while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
-                for i = 1, 20 do
+                for i = 1, 30 do
                     LocalPlayer.muscleEvent:FireServer("rep")
                     task.wait()
                 end
