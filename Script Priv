@@ -18,11 +18,11 @@ local function checkWhitelist()
     print("Your UserId:", userId)
     for _, id in ipairs(whitelist) do
         if tonumber(id) == userId then
-            print("â\xe2\xe2\x9c\xe2\x9c\x85 You are whitelisted!")
+            print("✅✅ You are whitelisted!")
             return true
         end
     end
-    warn("â\xe2\xe2\x9d\xe2\x9d\x8c You are NOT whitelisted.")
+    warn("❌❌ You are NOT whitelisted.")
     return false
 end
 if not checkWhitelist() then
@@ -177,8 +177,12 @@ rebirthTab.newToggle("Fast Rebirth", "Toggle Fast Rebirth", false, function(stat
     fastRebirth = state
 end)
 
+--// UI Options Tab Setup
+local uiTab = DrRayLibrary.newTab("UI Options", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
+uiTab.newLabel("UI customization settings")
+
 --// Hide All Frames Toggle
-rebirthTab.newToggle("Hide All Frames", "Hide all UI frames in ReplicatedStorage", false, function(state)
+uiTab.newToggle("Hide All Frames", "Hide all UI frames in ReplicatedStorage", false, function(state)
     for _, obj in pairs(ReplicatedStorage:GetChildren()) do
         if obj:IsA("Instance") and obj.Name:match("Frame$") then
             obj.Visible = not state
@@ -228,7 +232,7 @@ task.spawn(function()
             equipPetByName("Swift Samurai")
 
             while LocalPlayer.leaderstats.Strength.Value < strengthNeeded do
-                for _ = 1, 20 do
+                for _ = 1, 1000 do
                     LocalPlayer.muscleEvent:FireServer("rep")
                 end
                 task.wait()
@@ -257,4 +261,3 @@ task.spawn(function()
         task.wait(0.5)
     end
 end)
-
