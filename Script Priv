@@ -168,19 +168,19 @@ local fastRebirth = false
 local statusLabel = rebirthTab.newLabel("Status: Idle")
 
 --// Rebirth Tab Toggles
-rebirthTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet.", function()
+rebirthTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet", function()
     equipPetByName("Swift Samurai")
 end)
 
-rebirthTab.newToggle("Auto Rep", "Toggle Auto Rep", false, function(state)
+rebirthTab.newToggle("Auto Rep", "Auto Rep(With Packs", false, function(state)
     autoRep = state
 end)
 
-rebirthTab.newToggle("Auto Rebirth", "Toggle Auto Rebirth", false, function(state)
+rebirthTab.newToggle("Auto Rebirth", "Auto Rebirth(Normal", false, function(state)
     autoRebirth = state
 end)
 
-rebirthTab.newToggle("Toggle Fast Rebirth", "Enable or disable fast rebirth", false, function(state)
+rebirthTab.newToggle("Toggle Fast Rebirth", "Fast Rebirth(With Packs", false, function(state)
     fastRebirth = state
 end)
 
@@ -189,7 +189,7 @@ local uiTab = DrRayLibrary.newTab("UI Options", "https://www.roblox.com/asset-th
 uiTab.newLabel("UI customization settings")
 
 --// Hide All Frames Toggle
-uiTab.newToggle("Hide All Frames", "Hide all UI frames in ReplicatedStorage", false, function(state)
+uiTab.newToggle("Hide All Frames", "Suggest Using For Auto Rep", false, function(state)
     for _, obj in pairs(ReplicatedStorage:GetChildren()) do
         if obj:IsA("Instance") and obj.Name:match("Frame$") then
             obj.Visible = not state
@@ -201,11 +201,11 @@ end)
 task.spawn(function()
     while true do
         if autoRep then
-            for _ = 1, 100 do
+            for _ = 1, 20 do
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
         end
-        task.wait()
+        task.wait(0.01)
     end
 end)
 
@@ -214,7 +214,7 @@ local a=game:GetService("ReplicatedStorage")local b=game:GetService("Players")lo
 
 --// Send Join Message
 local success, err = pcall(function()
-    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Loaded ✅ PRIVATE SCRIPT Made by CLK_Canes(CLK ON TOP)", "All")
+    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Loaded ✅: PRIVATE SCRIPT Made by Canes(CLK ON TOP)", "All")
 end)
 if not success then
     warn("Failed to send chat message:", err)
