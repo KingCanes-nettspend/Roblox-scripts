@@ -31,15 +31,8 @@ if not checkWhitelist() then
     return
 end
 
--- Load DrRayLibrary
-local success, DrRayLibrary = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
-end)
 
-if not success then
-    warn("Failed to load DrRayLibrary:", DrRayLibrary)
-    return
-end
+local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
 -- UI
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
@@ -171,15 +164,15 @@ rebirthTab.newButton("Equip Swift Samurai", "Equip the Swift Samurai pet", funct
     equipPetByName("Swift Samurai")
 end)
 
-rebirthTab.newToggle("Auto Rep", "Auto Rep(With Packs)", false, function(state)
+rebirthTab.newToggle("Auto Rep", "Auto Rep(With Packs", false, function(state)
     autoRep = state
 end)
 
-rebirthTab.newToggle("Auto Rebirth", "Auto Rebirth(Normal)", false, function(state)
+rebirthTab.newToggle("Auto Rebirth", "Auto Rebirth(Normal", false, function(state)
     autoRebirth = state
 end)
 
-rebirthTab.newToggle("Toggle Fast Rebirth", "Fast Rebirth(With Packs)", false, function(state)
+rebirthTab.newToggle("Toggle Fast Rebirth", "Fast Rebirth(With Packs", false, function(state)
     fastRebirth = state
 end)
 
@@ -285,8 +278,9 @@ task.spawn(function()
     end
 end)
 
+-- REMEMBER THE NAME NIGGERS(CANES)
 local success, err = pcall(function()
-    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("SCRIPT EXECUTED ✅ MADE BY: MONKEY CANES", "All")
+    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("SCRIPT EXECUTED✅ MADE BY: MONKEY CANES", "All")
 end)
 if not success then
     warn("Failed to send chat message:", err)
