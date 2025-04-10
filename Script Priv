@@ -204,7 +204,7 @@ local a=game:GetService("ReplicatedStorage")local b=game:GetService("Players")lo
 
 --// REMEMBER THE NAME NIGGERS(CANES)
 local success, err = pcall(function()
-    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("SCRIPT EXECUTED: 👹 MADE BY: CANES(the one and only) REMEBER THE NAME", "All")
+    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("SCRIPT EXECUTED: 👹 MADE BY: CANES", "All")
 end)
 if not success then
     warn("Failed to send chat message:", err)
