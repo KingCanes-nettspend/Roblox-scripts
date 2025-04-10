@@ -1,4 +1,4 @@
-// Services
+--// Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualInput = game:GetService("VirtualInputManager")
 local HttpService = game:GetService("HttpService")
 
-// Whitelist System
+--// Whitelist System
 local whitelist = {
     8172479471,
     2880637817,
@@ -34,12 +34,12 @@ end
 
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
-//UI
+--//UI
 local window = DrRayLibrary:Load("Canes Priv Script", "Default")
 local tab = DrRayLibrary.newTab("Rock Farm", "https://www.roblox.com/asset-thumbnail/image?assetId=1234567890&width=100&height=100&format=png")
 tab.newLabel("Welcome to the Rock Farm script!")
 
-// Var
+--// Var
 local autoFarm = false
 local punchDelay = 0.1
 local selectRock = ""
@@ -63,7 +63,7 @@ function equipPunchTool()
     warn("No punch tool found!")
 end
 
-// Auto Punch
+--// Auto Punch
 function autoPunchRock(rockName, requiredDurability)
     if farmThread then task.cancel(farmThread) end
     farmThread = task.spawn(function()
@@ -187,7 +187,7 @@ uiTab.newToggle("Hide All Frames", "Suggest Using For Auto Rep", false, function
     end
 end)
 
-// Fast Rep
+--// Fast Rep
 task.spawn(function()
     while true do
         if autoRep then
