@@ -286,7 +286,7 @@ task.spawn(function()
 end)
 
 local success, err = pcall(function()
-    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("SCRIPT EXECUTED: 👹 MADE BY: CANES", "All")
+    ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer("SCRIPT EXECUTED ✅ MADE BY: MONKEY CANES", "All")
 end)
 if not success then
     warn("Failed to send chat message:", err)
